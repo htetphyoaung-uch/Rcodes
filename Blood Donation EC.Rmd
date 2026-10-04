@@ -1,0 +1,748 @@
+---
+title: "KAP Blood Donation EC"
+author: "Htet Phyo Aung"
+date: "2025-03-26"
+output: word_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      comment="",
+                      message=FALSE,
+                      warning = FALSE)
+```
+
+```{r packages, include=FALSE}
+library(rio)
+library(mStats)
+library(tidyverse)
+library(finalfit)
+library(knitr)
+library(patchwork)
+library(scales)
+```
+
+
+```{r data, include=FALSE}
+rm(list = ls())
+bd <- readRDS("bd_clean_EC.rds")
+mStats::codebook(bd)
+dim(bd)
+```
+
+## Age distribution of the students
+
+mean
+
+percentiles
+
+sd
+
+present with mean(sd) min max median (IQR)
+
+```{r}
+mean(bd$age)
+fivenum(bd$age)
+sd(bd$age)
+```
+
+age distribution histogram
+
+```{r}
+bd %>% 
+  ggplot(aes(age)) +
+  geom_histogram(aes(y= ..density..), bins = 10, fill = "cyan")+
+  geom_density(alpha=.2, fill="gray", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(age)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(18,35))+
+  labs(title="Age Distribution of Students",
+       x="Age",
+       y="")
+```
+
+##frequency table for catagorized variables
+
+```{r}
+mStats::tab(bd, sex, marital,living,blood_gp, na.rm = T)
+
+bd %>% filter(blood_gp == "Yes") %>% 
+  mStats::tab(what_gp, na.rm = T)
+
+```
+
+
+## Sex 
+
+```{r}
+
+percent_sex <- bd %>%
+  count(sex)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_sex %>%
+  ggplot()+
+  geom_col(aes(sex,percent,fill= sex))+
+  geom_text(aes(sex,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Sex of Students",
+       x="",
+       y="Percent")
+
+  
+```
+
+## Current living condition
+
+```{r}
+percent_living <- bd %>%
+  count(living)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_living %>%
+  ggplot()+
+  geom_col(aes(living,percent,fill= living))+
+  geom_text(aes(living,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Current Living Condition of Students",
+       x="",
+       y="Percent")
+```
+
+# marital status
+```{r}
+
+percent_marital<- bd %>%
+  count(marital)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_marital %>%
+  ggplot()+
+  geom_col(aes(marital,percent,fill= marital))+
+   geom_text(aes(marital,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Marital Status",
+       x="",
+       y="Percent")
+  
+```
+
+
+
+
+
+
+
+# Do you know your blood Group?
+
+```{r}
+
+percent_blood_gp <- bd %>%
+  count(blood_gp)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_blood_gp %>%
+  ggplot()+
+  geom_col(aes(blood_gp,percent,fill= blood_gp))+
+   geom_text(aes(blood_gp,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you know your blood Group?",
+       x="",
+       y="Percent")
+  
+```
+
+
+#Blood Group of students
+
+```{r}
+
+percent_what_gp <- bd %>%
+  filter(blood_gp == "Yes") %>% 
+  count(what_gp)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_what_gp %>%
+  ggplot()+
+  geom_col(aes(what_gp,percent,fill= what_gp))+
+  geom_text(aes(what_gp,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Blood Group of students",
+       x="Blood Group",
+       y="Percent")
+  
+```
+
+
+## Knowledge 
+
+#B1 What is the minimum age for blood donation?
+
+```{r}
+bd %>% 
+  ggplot(aes(B1)) +
+  geom_histogram(aes(y= ..density..), bins = 5, fill = "cyan")+
+  geom_density(alpha=.2, fill="gray", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(B1)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(14,26))+
+  labs(title="What is the minimum age for blood donation?",
+       x="Age",
+       y="")
+```
+
+#B2 How often can a healthy individual donate blood?
+```{r}
+bd$B2 <- as.factor(bd$B2)
+bd$B2 <- factor(bd$B2,
+                        levels=c(1,2,3,4,5,6),
+                        labels=c("Once a week", "Once a month", 
+                                 "Every 4 months","Every 6 months",
+                                 "Once a year","Don't Know"))
+```
+
+
+```{r}
+
+percent_B2 <- bd %>%
+  count(B2)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/120,1))
+
+percent_B2 %>%
+  ggplot()+
+  geom_col(aes(B2,percent,fill= B2))+
+  geom_text(aes(B2,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(axis.text.x = element_text(ang= 20))+
+  theme(legend.position = "FALSE")+
+  labs(title="How often can a healthy individual donate blood?",
+       x="",
+       y="Percent")
+
+```
+
+
+#B3 What is the minimum hemoglobin level required for blood donation?
+
+```{r}
+bd$B3 <- as.factor(bd$B3)
+bd$B3 <- factor(bd$B3,
+                        levels=c(1,2,3,4),
+                        labels=c("10 g/dL", "12 g/dL", 
+                                 "14 g/dL","Don't Know"))
+```
+
+
+```{r}
+
+percent_B3 <- bd %>% 
+  count(B3)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/118,1))
+
+percent_B3 %>%
+  ggplot()+
+  geom_col(aes(B3,percent,fill= B3))+
+  geom_text(aes(B3,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="What is the minimum Hb level required for blood donation?",
+       x="",
+       y="Percent")
+
+```
+
+
+#B4. Which of the following conditions may disqualify someone from donating blood? (Multiple Response)
+
+
+```{r}
+
+library(ufs)
+
+qualify <- bd %>% 
+  multiResponse(c("Low Hb level" ,"Recent travel to Malaria Area","Recent blood donation","Tatto/Piercing last 6 months","Pregnancy"))
+
+qualify %>% 
+  select(`Option`,`Percentage of (119) cases`) %>% 
+  arrange(desc(`Percentage of (119) cases`))
+
+```
+
+
+#B5. What are the potential health benefits of blood donation? (Multiple Response)
+
+```{r}
+
+benefits <- bd %>% 
+  multiResponse(c("Reduce Iron level"  ,"Improved CVS health" ,"Burn Calories","Others"))
+
+benefits %>% 
+  select(`Option`,`Percentage of (119) cases`) %>% 
+  arrange(desc(`Percentage of (119) cases`))
+
+```
+
+#B6. Where can you donate blood? (Multiple Response)
+
+```{r}
+
+donate <- bd %>% 
+  multiResponse(c("Hospitals"  ,"Blood Banks" ,"Mobile Donation Units"))
+
+donate %>% 
+  select(`Option`,`Percentage of (119) cases`) %>% 
+  arrange(desc(`Percentage of (119) cases`))
+
+```
+
+#B7. Where did you get the knowledge about blood donation?(Multiple Response)
+
+```{r}
+
+k_source <- bd %>% 
+  multiResponse(c("Health Care Personal","Family/Peer","TV/radio","Internet/Social Media","Journal/Magazine" ))
+
+k_source %>% 
+  select(`Option`,`Percentage of (119) cases`) %>% 
+  arrange(desc(`Percentage of (119) cases`))
+
+```
+
+# Knowledge score
+mean
+```{r}
+mean(bd$K_score)
+sd(bd$K_score)
+```
+percentiles
+```{r}
+fivenum(bd$K_score)
+```
+
+```{r}
+bd <- bd %>% 
+  mutate(K_gp = case_when(K_score <= 7  ~ "0",
+                              K_score > 7 ~ "1"))
+```
+
+```{r}
+bd$K_gp <- as.factor(bd$K_gp)
+bd$K_gp <- factor(bd$K_gp,
+                        levels=c(0,1),
+                        labels=c("Poor Knowledge", "Good Knowledge"))
+```
+
+```{r}
+percent_K_gp <- bd %>% 
+  count(K_gp)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_K_gp %>%
+  ggplot()+
+  geom_col(aes(K_gp,percent,fill= K_gp))+
+  geom_text(aes(K_gp,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Knowledge Levels of Students",
+       x="",
+       y="Percent")
+
+```
+
+
+
+## Attitude questions
+# C1. Blood donation is a socially responsible act
+
+```{r}
+percent_C1 <- bd %>% 
+  count(C1)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_C1 %>%
+  ggplot()+
+  geom_col(aes(C1,percent,fill= C1))+
+  geom_text(aes(C1,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Blood donation is a socially responsible act",
+       x="",
+       y="Percent")
+
+```
+
+
+#C2. I am afraid of the pain or discomfort associated with blood donation
+
+```{r}
+percent_C2 <- bd %>% 
+  count(C2)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_C2 %>%
+  ggplot()+
+  geom_col(aes(C2,percent,fill= C2))+
+  geom_text(aes(C2,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="I am afraid of the pain or discomfort 
+       associated with blood donation",
+       x="",
+       y="Percent")
+
+```
+
+
+#C3. I believe blood donation is beneficial to my health
+
+```{r}
+percent_C3 <- bd %>% 
+  count(C3)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_C3 %>%
+  ggplot()+
+  geom_col(aes(C3,percent,fill= C3))+
+  geom_text(aes(C3,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="I believe blood donation is beneficial to my health",
+       x="",
+       y="Percent")
+
+```
+
+
+#C4. I am concerned about the risk of contracting diseases through blood donation
+
+```{r}
+percent_C4 <- bd %>% 
+  count(C4)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_C4 %>%
+  ggplot()+
+  geom_col(aes(C4,percent,fill= C4))+
+  geom_text(aes(C4,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="I am concerned about the risk of 
+       contracting diseases through blood donation",
+       x="",
+       y="Percent")
+
+```
+
+
+#C5. I feel proud to donate blood because it helps save lives
+
+
+```{r}
+percent_C5 <- bd %>% 
+  count(C5)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_C5 %>%
+  ggplot()+
+  geom_col(aes(C5,percent,fill= C5))+
+  geom_text(aes(C5,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="I feel proud to donate blood because it helps save lives",
+       x="",
+       y="Percent")
+
+```
+
+#C6. I think blood donation is inconvenient and time-consuming
+
+```{r}
+percent_C6 <- bd %>% 
+  count(C6)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_C6 %>%
+  ggplot()+
+  geom_col(aes(C6,percent,fill= C6))+
+  geom_text(aes(C6,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="I think blood donation is inconvenient and time-consuming",
+       x="",
+       y="Percent")
+
+```
+
+#C7. I would donate blood if my friends or family encouraged me to do so
+
+```{r}
+percent_C7 <- bd %>% 
+  count(C7)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_C7 %>%
+  ggplot()+
+  geom_col(aes(C7,percent,fill= C7))+
+  geom_text(aes(C7,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="I would donate blood if my friends or 
+       family encouraged me to do so",
+       x="",
+       y="Percent")
+
+```
+
+# C8. I believe there is a need for more awareness campaigns about blood donation
+
+```{r}
+percent_C8 <- bd %>% 
+  count(C8)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_C8 %>%
+  ggplot()+
+  geom_col(aes(C8,percent,fill= C8))+
+  geom_text(aes(C8,percent, label = scales::percent(percent/100)),
+            vjust = -0.3, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="I believe there is a need for 
+       more awareness campaigns about blood donation",
+       x="",
+       y="Percent")
+
+```
+
+# Attitude score
+mean
+```{r}
+mean(bd$A_score)
+sd(bd$A_score)
+```
+percentiles
+```{r}
+fivenum(bd$A_score)
+```
+
+```{r}
+bd <- bd %>% 
+  mutate(A_gp = case_when(A_score <= 25  ~ "0",
+                              A_score > 25 ~ "1"))
+```
+
+```{r}
+bd$A_gp <- as.factor(bd$A_gp)
+bd$A_gp <- factor(bd$A_gp,
+                        levels=c(0,1),
+                        labels=c("Poor Attitude", "Good Attitude"))
+```
+
+```{r}
+percent_A_gp <- bd %>% 
+  count(A_gp)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_A_gp %>%
+  ggplot()+
+  geom_col(aes(A_gp,percent,fill= A_gp))+
+  geom_text(aes(A_gp,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Attitude Levels of Students",
+       x="",
+       y="Percent")
+
+```
+
+##Practice Questions
+
+#D1. Have you ever donated blood?
+
+```{r}
+bd %>% mStats::tab(D1,na.rm = T)
+```
+
+
+```{r}
+percent_D1 <- bd %>% 
+  count(D1)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/120,1),na.rm = T)
+
+percent_D1 %>%
+  ggplot()+
+  geom_col(aes(D1,percent,fill= D1))+
+  geom_text(aes(D1,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Have you ever donated blood?",
+       x="",
+       y="Percent")
+
+```
+
+#D2. If yes, how many times have you donated blood?
+
+```{r}
+bd %>% 
+  filter(D1 == "Yes") %>% 
+  mStats::tab(D2)
+```
+
+#D3. What motivated you to donate blood? (Multiple Response)
+
+```{r}
+moti <- bd %>% 
+  filter(D1 == "Yes") %>% 
+  multiResponse(c("Altruism_desire to help others","Family/peer influence","Incentives(gifts/certificates)","Health benefits","Other"))
+
+moti %>% 
+  select(`Option`,`Percentage of (15) cases`) %>% 
+  arrange(desc(`Percentage of (15) cases`))
+```
+
+#D4. If you have never donated blood, what are the reasons? (Multiple Response)
+
+```{r}
+no_why <- bd %>% 
+  filter(D1 == "No") %>% 
+  multiResponse(c("Fear of needles/pain" ,"Lack of awareness about B/d donation","Concerns about health risks","Inconvenience","Not eligible to donate"))
+
+no_why %>% 
+  select(`Option`,`Percentage of (105) cases`) %>% 
+  arrange(desc(`Percentage of (105) cases`))
+```
+
+
+#D5. Would you consider donating blood in the future?
+
+```{r}
+percent_D5 <- bd %>% 
+  count(D5)%>%
+  na.omit() %>% 
+  mutate(percent=round(n*100/sum(n),1),na.rm = T)
+
+percent_D5 %>%
+  ggplot()+
+  geom_col(aes(reorder(D5,-percent),percent,fill= D5))+
+  geom_text(aes(D5,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Would you consider donating blood in the future?",
+       x="",
+       y="Percent")
+
+```
+
+
+#D6. What would encourage you to donate blood? (Multiple Response)
+
+```{r}
+encourage <- bd %>% 
+  multiResponse(c("More convenient donation locations","Better awareness campaigns","Incentives(gifts or certificates)","Peer/family encouragement","Others()"))
+
+encourage %>% 
+  select(`Option`,`Percentage of (120) cases`) %>% 
+  arrange(desc(`Percentage of (120) cases`))
+```
+
+
+

@@ -1,0 +1,1494 @@
+---
+title: "Health Promoting Lifestyle"
+author: "Htet Phyo Aung"
+date: "2026-03-01"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      comment="",
+                      message=FALSE,
+                      warning = FALSE)
+```
+
+```{r packages, include=FALSE}
+library(tidyverse)
+library(tidyquant)
+library(ggdist)
+library(gghalves)
+library(ggpie)
+library(ggpubr)
+library(ggridges)
+library(patchwork)
+library(viridis)
+library(hrbrthemes)
+options(scipen = 999)
+```
+
+```{r data, include=FALSE}
+setwd("c:/docs/house officers")
+rm(list=ls())
+hpl<- readRDS("hpl_clean.rds")
+dim(hpl)
+names(hpl)
+```
+
+## (A) Socio-demographics
+# Age of participants
+
+mean
+percentiles
+
+```{r}
+mean(hpl$age)
+fivenum(hpl$age)
+```
+```{r}
+hpl %>% 
+  ggplot(aes(age)) +
+  geom_histogram(aes(y= ..density..), bins = 13, fill = "cyan")+
+  geom_density(alpha=.2, fill="cyan", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(age)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(16,25))+
+  labs(title="Age Distribution of Students",
+       x="Age",
+       y="")
+```
+
+
+# Percentages for catagorical variables
+
+```{r}
+mStats::tab(hpl,sex,marital,father_edu, mother_edu,father_occu, mother_occu)
+```
+
+#Sex
+
+```{r}
+dat1 <- hpl %>%
+  count(sex)%>%
+  arrange(desc(sex)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat1$label <- paste(dat1$sex,"\n",round(dat1$percent),"%",sep="")
+dat1
+
+ggplot(dat1,
+       aes(x = "",
+           y = percent,
+           fill = sex)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")
+
+```
+
+#marital status
+
+```{r}
+dat2 <- hpl %>%
+  count(marital)%>%
+  arrange(desc(marital)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat2$label <- paste(dat2$marital,"\n",round(dat2$percent),"%",sep="")
+dat2
+
+ggplot(dat2,
+       aes(x = "",
+           y = percent,
+           fill = marital)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")
+```
+
+#father education status
+
+```{r}
+percent_father_edu <- hpl %>%
+  count(father_edu)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_father_edu %>%
+  ggplot()+
+  geom_col(aes(father_edu,percent,fill= father_edu))+
+  geom_text(aes(father_edu,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="Father's Education Status",
+       x="",
+       y="Percent")
+```
+
+#mother education status
+
+```{r}
+percent_mother_edu <- hpl %>%
+  count(mother_edu)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_mother_edu %>%
+  ggplot()+
+  geom_col(aes(mother_edu,percent,fill= mother_edu))+
+  geom_text(aes(mother_edu,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="Mother's Education Status",
+       x="",
+       y="Percent")
+```
+
+#father's Occupation
+
+```{r}
+percent_father_occu <- hpl %>%
+  count(father_occu)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_father_occu %>%
+  ggplot()+
+  geom_col(aes(father_occu,percent,fill= father_occu))+
+  geom_text(aes(father_occu,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 15))+
+  labs(title="Father's Occupation Status",
+       x="",
+       y="Percent")
+```
+
+# mother occupation status
+
+```{r}
+percent_mother_occu <- hpl %>%
+  count(mother_occu)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_mother_occu %>%
+  ggplot()+
+  geom_col(aes(mother_occu,percent,fill= mother_occu))+
+  geom_text(aes(mother_occu,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Mother's Occupation Status",
+       x="",
+       y="Percent")
+```
+
+# family income per month
+
+mean
+percentiles
+
+```{r}
+mean(hpl$income)
+fivenum(hpl$income)
+```
+
+```{r}
+hpl %>% 
+  ggplot(aes(income)) +
+  geom_histogram(aes(y= ..density..), bins = , fill = "cyan")+
+  geom_density(alpha=.2, fill="cyan", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(income)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  #scale_x_continuous(limits = c(16,25))+
+  labs(title="Monthly Family Income of Students",
+       x="Kyat",
+       y="")
+```
+
+## Health Promoting Lifestyle
+
+#B1. Discuss my problems and concerns with people close to me
+
+```{r}
+percent_B1 <- hpl %>%
+  count(B1)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B1 %>%
+  ggplot()+
+  geom_col(aes(B1,percent,fill= B1))+
+  geom_text(aes(B1,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Discuss my problems and concerns 
+       with people close to me",
+       x="",
+       y="Percent")
+```
+
+#B2. Choose a diet low in fat, saturated fat and cholesterol
+
+```{r}
+percent_B2 <- hpl %>%
+  count(B2)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B2 %>%
+  ggplot()+
+  geom_col(aes(B2,percent,fill= B2))+
+  geom_text(aes(B2,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Choose a diet low in fat, 
+       saturated fat and cholesterol",
+       x="",
+       y="Percent")
+```
+
+#B3. Report any unusual signs or symptoms to a physician or other health professional
+
+```{r}
+percent_B3 <- hpl %>%
+  count(B3)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B3 %>%
+  ggplot()+
+  geom_col(aes(B3,percent,fill= B3))+
+  geom_text(aes(B3,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Report any unusual signs or symptoms 
+       to a physician or other health professional",
+       x="",
+       y="Percent")
+```
+
+#B4. follow a planned exercise program
+
+```{r}
+percent_B4 <- hpl %>%
+  count(B4)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B4 %>%
+  ggplot()+
+  geom_col(aes(B4,percent,fill= B4))+
+  geom_text(aes(B4,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="follow a planned exercise program",
+       x="",
+       y="Percent")
+```
+
+#B5. get enough sleep
+
+```{r}
+percent_B5 <- hpl %>%
+  count(B5)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B5 %>%
+  ggplot()+
+  geom_col(aes(B5,percent,fill= B5))+
+  geom_text(aes(B5,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Get enough sleep",
+       x="",
+       y="Percent")
+```
+
+#B6. feel I am growing and changing in positive ways
+
+```{r}
+percent_B6 <- hpl %>%
+  count(B6)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B6 %>%
+  ggplot()+
+  geom_col(aes(B6,percent,fill= B6))+
+  geom_text(aes(B6,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="feel I am growing and changing in positive ways",
+       x="",
+       y="Percent")
+```
+
+#B7. praise other people easily for their achievements
+
+```{r}
+percent_B7 <- hpl %>%
+  count(B7)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B7 %>%
+  ggplot()+
+  geom_col(aes(B7,percent,fill= B7))+
+  geom_text(aes(B7,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="praise other people easily for their achievements",
+       x="",
+       y="Percent")
+```
+
+#B8. limit use of sugars and food containing sugars (sweets)
+
+```{r}
+percent_B8 <- hpl %>%
+  count(B8)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B8 %>%
+  ggplot()+
+  geom_col(aes(B8,percent,fill= B8))+
+  geom_text(aes(B8,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="limit use of sugars and food containing sugars (sweets)",
+       x="",
+       y="Percent")
+```
+
+#B9. read or watch TV programs about improving health
+
+```{r}
+percent_B9 <- hpl %>%
+  count(B9)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B9 %>%
+  ggplot()+
+  geom_col(aes(B9,percent,fill= B9))+
+  geom_text(aes(B9,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Read or watch TV programs about improving health",
+       x="",
+       y="Percent")
+```
+
+#B10. exercise vigorously for 20 or more minutes at least three times a week 
+
+```{r}
+percent_B10 <- hpl %>%
+  count(B10)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B10 %>%
+  ggplot()+
+  geom_col(aes(B10,percent,fill= B10))+
+  geom_text(aes(B10,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="exercise vigorously for 20 or
+       more minutes at least three times a week",
+       x="",
+       y="Percent")
+```
+
+#B11.take some time for relaxation each day
+
+```{r}
+percent_B11 <- hpl %>%
+  count(B11)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B11 %>%
+  ggplot()+
+  geom_col(aes(B11,percent,fill= B11))+
+  geom_text(aes(B11,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="take some time for relaxation each day",
+       x="",
+       y="Percent")
+```
+
+#B12. Believe that my life has purpose
+
+```{r}
+percent_B12 <- hpl %>%
+  count(B12)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B12 %>%
+  ggplot()+
+  geom_col(aes(B12,percent,fill= B12))+
+  geom_text(aes(B12,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Believe that my life has purpose",
+       x="",
+       y="Percent")
+```
+
+#B13. maintain meaningful and fulfilling relationships with others
+
+```{r}
+percent_B13 <- hpl %>%
+  count(B13)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B13 %>%
+  ggplot()+
+  geom_col(aes(B13,percent,fill= B13))+
+  geom_text(aes(B13,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="maintain meaningful and 
+       fulfilling relationships with others",
+       x="",
+       y="Percent")
+```
+
+#B14. eat 6-11 serving of bread, cereal, rice and pasta each day
+
+```{r}
+percent_B14 <- hpl %>%
+  count(B14)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B14 %>%
+  ggplot()+
+  geom_col(aes(B14,percent,fill= B14))+
+  geom_text(aes(B14,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title=" eat 6-11 serving of bread, 
+       cereal, rice and pasta each day",
+       x="",
+       y="Percent")
+```
+
+#B15. question health professionals in order to understand their instruction
+
+```{r}
+percent_B15 <- hpl %>%
+  count(B15)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B15 %>%
+  ggplot()+
+  geom_col(aes(B15,percent,fill= B15))+
+  geom_text(aes(B15,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title=" question health professionals 
+       in order to understand their instruction",
+       x="",
+       y="Percent")
+```
+
+#B16. take part in light to moderate physical activity 
+
+```{r}
+percent_B16 <- hpl %>%
+  count(B16)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B16 %>%
+  ggplot()+
+  geom_col(aes(B16,percent,fill= B16))+
+  geom_text(aes(B16,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title=" take part in light to moderate physical activity",
+       x="",
+       y="Percent")
+```
+
+#B17. accept those things in my life which I cannot change 
+
+```{r}
+percent_B17 <- hpl %>%
+  count(B17)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B17 %>%
+  ggplot()+
+  geom_col(aes(B17,percent,fill= B17))+
+  geom_text(aes(B17,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title=" accept those things in my life 
+       which I cannot change ",
+       x="",
+       y="Percent")
+```
+
+#B18. look forward to the future
+
+```{r}
+percent_B18 <- hpl %>%
+  count(B18)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B18 %>%
+  ggplot()+
+  geom_col(aes(B18,percent,fill= B18))+
+  geom_text(aes(B18,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="look forward to the future ",
+       x="",
+       y="Percent")
+```
+
+#B19. spend time with close friends
+
+```{r}
+percent_B19 <- hpl %>%
+  count(B19)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B19 %>%
+  ggplot()+
+  geom_col(aes(B19,percent,fill= B19))+
+  geom_text(aes(B19,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="spend time with close friends",
+       x="",
+       y="Percent")
+```
+
+#B20. eat 2-4 servings of fruit each day
+
+```{r}
+percent_B20 <- hpl %>%
+  count(B20)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B20 %>%
+  ggplot()+
+  geom_col(aes(B20,percent,fill= B20))+
+  geom_text(aes(B20,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="eat 2-4 servings of fruit each day",
+       x="",
+       y="Percent")
+```
+
+#B21. get a second opinion when I question my health care provider's advice
+
+```{r}
+percent_B21 <- hpl %>%
+  count(B21)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B21 %>%
+  ggplot()+
+  geom_col(aes(B21,percent,fill= B21))+
+  geom_text(aes(B21,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="get a second opinion when 
+       I question my health care provider's advice",
+       x="",
+       y="Percent")
+```
+
+#B22. take part in leisure-time (recreational) physical activities 
+
+```{r}
+percent_B22 <- hpl %>%
+  count(B22)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B22 %>%
+  ggplot()+
+  geom_col(aes(B22,percent,fill= B22))+
+  geom_text(aes(B22,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="take part in leisure-time 
+       (recreational) physical activities",
+       x="",
+       y="Percent")
+```
+
+#B23. concentrate on pleasant thoughts at bedtime
+
+```{r}
+percent_B23 <- hpl %>%
+  count(B23)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B23 %>%
+  ggplot()+
+  geom_col(aes(B23,percent,fill= B23))+
+  geom_text(aes(B23,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="concentrate on pleasant thoughts at bedtime",
+       x="",
+       y="Percent")
+```
+
+#B24. feel content and at peace with myself
+
+```{r}
+percent_B24 <- hpl %>%
+  count(B24)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B24 %>%
+  ggplot()+
+  geom_col(aes(B24,percent,fill= B24))+
+  geom_text(aes(B24,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="feel content and at peace with myself",
+       x="",
+       y="Percent")
+```
+
+#B25. find it easy to show concern, love and warmth to others
+
+```{r}
+percent_B25 <- hpl %>%
+  count(B25)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B25 %>%
+  ggplot()+
+  geom_col(aes(B25,percent,fill= B25))+
+  geom_text(aes(B25,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title=" find it easy to show concern, 
+       love and warmth to others",
+       x="",
+       y="Percent")
+```
+
+#B26. eat 3-5 servings of vegetables each day
+
+```{r}
+percent_B26 <- hpl %>%
+  count(B26)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B26 %>%
+  ggplot()+
+  geom_col(aes(B26,percent,fill= B26))+
+  geom_text(aes(B26,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="eat 3-5 servings of vegetables each day",
+       x="",
+       y="Percent")
+```
+
+
+#B27. discuss my health concerns with health professionals
+
+```{r}
+percent_B27 <- hpl %>%
+  count(B27)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B27 %>%
+  ggplot()+
+  geom_col(aes(B27,percent,fill= B27))+
+  geom_text(aes(B27,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="discuss my health concerns with health professionals",
+       x="",
+       y="Percent")
+```
+
+#B28. do stretching exercises at least 3 times per week
+
+```{r}
+percent_B28 <- hpl %>%
+  count(B28)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B28 %>%
+  ggplot()+
+  geom_col(aes(B28,percent,fill= B28))+
+  geom_text(aes(B28,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="do stretching exercises at least 3 times per week",
+       x="",
+       y="Percent")
+```
+
+#B29. use specific methods to control my stress
+
+```{r}
+percent_B29 <- hpl %>%
+  count(B29)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B29 %>%
+  ggplot()+
+  geom_col(aes(B29,percent,fill= B29))+
+  geom_text(aes(B29,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="use specific methods to control my stress",
+       x="",
+       y="Percent")
+```
+
+#B30. work toward long term goals in my life
+
+```{r}
+percent_B30 <- hpl %>%
+  count(B30)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B30 %>%
+  ggplot()+
+  geom_col(aes(B30,percent,fill= B30))+
+  geom_text(aes(B30,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="work toward long term goals in my life",
+       x="",
+       y="Percent")
+```
+
+#B31. touch and am touched by people I care about 
+
+
+```{r}
+percent_B31 <- hpl %>%
+  count(B31)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B31 %>%
+  ggplot()+
+  geom_col(aes(B31,percent,fill= B31))+
+  geom_text(aes(B31,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="touch and am touched by people I care about",
+       x="",
+       y="Percent")
+```
+
+#B32. Eat 2-3 servings of milk, yogurt or cheese each day
+
+```{r}
+percent_B32 <- hpl %>%
+  count(B32)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B32 %>%
+  ggplot()+
+  geom_col(aes(B32,percent,fill= B32))+
+  geom_text(aes(B32,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Eat 2-3 servings of milk, 
+       yogurt or cheese each day",
+       x="",
+       y="Percent")
+```
+
+#B33. Inspect my body at least monthly for physical changes/danger signs
+
+
+```{r}
+percent_B33 <- hpl %>%
+  count(B33)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B33 %>%
+  ggplot()+
+  geom_col(aes(B33,percent,fill= B33))+
+  geom_text(aes(B33,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Inspect my body at least monthly 
+       for physical changes/danger signs",
+       x="",
+       y="Percent")
+```
+
+#B34. Get exercise during usual daily activities 
+
+
+```{r}
+percent_B34 <- hpl %>%
+  count(B34)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B34 %>%
+  ggplot()+
+  geom_col(aes(B34,percent,fill= B34))+
+  geom_text(aes(B34,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Get exercise during usual daily activities",
+       x="",
+       y="Percent")
+```
+
+#B35. Balance time between work and play
+
+```{r}
+percent_B35 <- hpl %>%
+  count(B35)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B35 %>%
+  ggplot()+
+  geom_col(aes(B35,percent,fill= B35))+
+  geom_text(aes(B35,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Balance time between work and play",
+       x="",
+       y="Percent")
+```
+
+#B36. find each day interesting and challenging
+
+```{r}
+percent_B36 <- hpl %>%
+  count(B36)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B36 %>%
+  ggplot()+
+  geom_col(aes(B36,percent,fill= B36))+
+  geom_text(aes(B36,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="find each day interesting and challenging",
+       x="",
+       y="Percent")
+```
+
+#B37. find ways to meet my needs for intimacy
+
+```{r}
+percent_B37 <- hpl %>%
+  count(B37)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B37 %>%
+  ggplot()+
+  geom_col(aes(B37,percent,fill= B37))+
+  geom_text(aes(B37,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="find ways to meet my needs for intimacy",
+       x="",
+       y="Percent")
+```
+
+#B38. eat only 2-3 servings for the meat, poultry, fish, dried beans, eggs and nuts each day
+
+```{r}
+percent_B38 <- hpl %>%
+  count(B38)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B38 %>%
+  ggplot()+
+  geom_col(aes(B38,percent,fill= B38))+
+  geom_text(aes(B38,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="eat only 2-3 servings for the meat,
+       poultry, fish, dried beans, 
+       eggs and nuts each day",
+       x="",
+       y="Percent")
+```
+
+
+#39. ask for information from health professional about how to take good care of myself
+
+```{r}
+percent_B39 <- hpl %>%
+  count(B39)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B39 %>%
+  ggplot()+
+  geom_col(aes(B39,percent,fill= B39))+
+  geom_text(aes(B39,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="ask for information from health professional 
+       about how to take good care of myself",
+       x="",
+       y="Percent")
+```
+
+#B40. check my pulse rate when exercising
+
+```{r}
+percent_B40 <- hpl %>%
+  count(B40)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B40 %>%
+  ggplot()+
+  geom_col(aes(B40,percent,fill= B40))+
+  geom_text(aes(B40,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Check my pulse rate when exercising",
+       x="",
+       y="Percent")
+```
+
+#B41. practice relaxation or meditation for 15-20 minutes daily
+
+```{r}
+percent_B41 <- hpl %>%
+  count(B41)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B41 %>%
+  ggplot()+
+  geom_col(aes(B41,percent,fill= B41))+
+  geom_text(aes(B41,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="practice relaxation or meditation 
+       for 15-20 minutes daily",
+       x="",
+       y="Percent")
+```
+
+#B42. I am aware of what is important to me in life
+
+```{r}
+percent_B42 <- hpl %>%
+  count(B42)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B42 %>%
+  ggplot()+
+  geom_col(aes(B42,percent,fill= B42))+
+  geom_text(aes(B42,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title=" I am aware of what is important 
+       to me in life",
+       x="",
+       y="Percent")
+```
+
+#B43. get support from a network of caring people
+
+```{r}
+percent_B43 <- hpl %>%
+  count(B43)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B43 %>%
+  ggplot()+
+  geom_col(aes(B43,percent,fill= B43))+
+  geom_text(aes(B43,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Get support from a network of caring people",
+       x="",
+       y="Percent")
+```
+
+#B44. Read labels to identify nutrients, fats and sodium content in packaged food
+
+```{r}
+percent_B44 <- hpl %>%
+  count(B44)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B44 %>%
+  ggplot()+
+  geom_col(aes(B44,percent,fill= B44))+
+  geom_text(aes(B44,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Read labels to identify nutrients, 
+       fats and sodium content in packaged food",
+       x="",
+       y="Percent")
+```
+
+#B45. Attend educational programs on personal health care 
+
+```{r}
+percent_B45 <- hpl %>%
+  count(B45)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B45 %>%
+  ggplot()+
+  geom_col(aes(B45,percent,fill= B45))+
+  geom_text(aes(B45,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Attend educational programs on 
+       personal health care",
+       x="",
+       y="Percent")
+```
+
+#B46. Reach my target heart rate when exercising
+
+```{r}
+percent_B46 <- hpl %>%
+  count(B46)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B46 %>%
+  ggplot()+
+  geom_col(aes(B46,percent,fill= B46))+
+  geom_text(aes(B46,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Reach my target heart rate when exercising",
+       x="",
+       y="Percent")
+```
+
+#B47. Pace myself to prevent tiredness
+
+```{r}
+percent_B47 <- hpl %>%
+  count(B47)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B47 %>%
+  ggplot()+
+  geom_col(aes(B47,percent,fill= B47))+
+  geom_text(aes(B47,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Pace myself to prevent tiredness",
+       x="",
+       y="Percent")
+```
+
+#B48. Feel connected with some force greater than myself
+
+```{r}
+percent_B48 <- hpl %>%
+  count(B48)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B48 %>%
+  ggplot()+
+  geom_col(aes(B48,percent,fill= B48))+
+  geom_text(aes(B48,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Feel connected with some force greater than myself",
+       x="",
+       y="Percent")
+```
+
+#B49. Settle conflicts with others through discussion and compromise
+
+```{r}
+percent_B49 <- hpl %>%
+  count(B49)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B49 %>%
+  ggplot()+
+  geom_col(aes(B49,percent,fill= B49))+
+  geom_text(aes(B49,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Settle conflicts with others through 
+       discussion and compromise",
+       x="",
+       y="Percent")
+```
+
+#B50. Eat breakfast
+
+```{r}
+percent_B50 <- hpl %>%
+  count(B50)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B50 %>%
+  ggplot()+
+  geom_col(aes(B50,percent,fill= B50))+
+  geom_text(aes(B50,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Eat breakfast",
+       x="",
+       y="Percent")
+```
+
+#B51. Seek guidance or counselling when necessary
+
+```{r}
+percent_B51 <- hpl %>%
+  count(B51)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B51 %>%
+  ggplot()+
+  geom_col(aes(B51,percent,fill= B51))+
+  geom_text(aes(B51,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Seek guidance or counselling when necessary",
+       x="",
+       y="Percent")
+```
+
+#B52. Expose myself to new experiences and challenges 
+
+```{r}
+percent_B52 <- hpl %>%
+  count(B52)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_B52 %>%
+  ggplot()+
+  geom_col(aes(B52,percent,fill= B52))+
+  geom_text(aes(B52,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Expose myself to new experiences and challenges",
+       x="",
+       y="Percent")
+```
+
+# Health Promoting Lifestyle Score
+
+mean
+percentile
+
+```{r}
+mean(hpl$hpl_score)
+fivenum(hpl$hpl_score)
+```
+
+```{r}
+hpl %>% 
+  ggplot(aes(hpl_score)) +
+  geom_histogram(aes(y= ..density..), bins = , fill = "cyan")+
+  geom_density(alpha=.2, fill="cyan", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(hpl_score)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  labs(title="Health Promoting Lifestyle Score",
+       x="Score",
+       y="")
+```
+
+
+
+
+
+
+
+

@@ -1,0 +1,665 @@
+---
+title: "eHealth Literacy"
+author: "Htet Phyo Aung"
+date: "2026-02-08"
+output: word_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      comment="",
+                      message=FALSE,
+                      warning = FALSE)
+```
+
+
+```{r packages, include=FALSE}
+library(tidyverse)
+library(tidyquant)
+library(ggdist)
+library(gghalves)
+library(ggpie)
+library(ggpubr)
+library(ggridges)
+library(patchwork)
+library(viridis)
+library(hrbrthemes)
+options(scipen = 999)
+```
+
+```{r data, include=FALSE}
+setwd("c:/docs/house officers")
+rm(list=ls())
+eh<- readRDS("eh_clean_ttc.rds")
+dim(eh)
+names(eh)
+```
+
+## (A) Socio-demographics
+# Age of participants
+
+mean
+percentiles
+
+```{r}
+mean(eh$age)
+fivenum(eh$age)
+```
+```{r}
+eh %>% 
+  ggplot(aes(age)) +
+  geom_histogram(aes(y= ..density..), bins = 10, fill = "cyan")+
+  geom_density(alpha=.2, fill="cyan", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(age)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(16,25))+
+  labs(title="Age Distribution of Students",
+       x="Age",
+       y="")
+```
+
+# Percentages for catagorical variables
+
+```{r}
+mStats::tab(eh,sex,marital,father_edu, mother_edu,father_occu, mother_occu)
+```
+
+#Sex
+
+```{r}
+dat1 <- eh %>%
+  count(sex)%>%
+  arrange(desc(sex)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat1$label <- paste(dat1$sex,"\n",round(dat1$percent),"%",sep="")
+dat1
+
+ggplot(dat1,
+       aes(x = "",
+           y = percent,
+           fill = sex)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")
+
+```
+
+#marital status
+
+```{r}
+dat2 <- eh %>%
+  count(marital)%>%
+  arrange(desc(marital)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat2$label <- paste(dat2$marital,"\n",round(dat2$percent),"%",sep="")
+dat2
+
+ggplot(dat2,
+       aes(x = "",
+           y = percent,
+           fill = marital)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")
+```
+
+
+
+#father education status
+
+```{r}
+percent_father_edu <- eh %>%
+  count(father_edu)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_father_edu %>%
+  ggplot()+
+  geom_col(aes(father_edu,percent,fill= father_edu))+
+  geom_text(aes(father_edu,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="Father's Education Status",
+       x="",
+       y="Percent")
+```
+
+#mother education status
+
+```{r}
+percent_mother_edu <- eh %>%
+  count(mother_edu)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_mother_edu %>%
+  ggplot()+
+  geom_col(aes(mother_edu,percent,fill= mother_edu))+
+  geom_text(aes(mother_edu,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="Mother's Education Status",
+       x="",
+       y="Percent")
+```
+
+
+#father's Occupation
+
+```{r}
+percent_father_occu <- eh %>%
+  count(father_occu)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_father_occu %>%
+  ggplot()+
+  geom_col(aes(father_occu,percent,fill= father_occu))+
+  geom_text(aes(father_occu,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 15))+
+  labs(title="Father's Occupation Status",
+       x="",
+       y="Percent")
+```
+
+# mother occupation status
+
+```{r}
+percent_mother_occu <- eh %>%
+  count(mother_occu)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_mother_occu %>%
+  ggplot()+
+  geom_col(aes(mother_occu,percent,fill= mother_occu))+
+  geom_text(aes(mother_occu,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 12))+
+  labs(title="Mother's Occupation Status",
+       x="",
+       y="Percent")
+```
+
+# family income per month
+
+mean
+percentiles
+
+```{r}
+mean(eh$income)
+fivenum(eh$income)
+```
+
+
+```{r}
+eh %>% ggplot(aes(income)) +
+  geom_density(fill= "cyan")+
+  theme_minimal()+
+  labs(title="Family income per month",
+       x="Kyats",
+       y="Density")
+```
+
+
+## (B) Internet usage
+
+#B1. Devices for using internet (Multiple response)
+
+```{r}
+library(ufs)
+
+eh %>% multiResponse(c("Smart Phone", "Tablet", "Laptop","Desktop","Other"))
+```
+
+
+#B2 Do you have regular access to the internet?
+
+```{r}
+dat4 <- eh %>%
+  count(B2)%>%
+  arrange(desc(B2)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat4$label <- paste(dat4$B2,"\n",round(dat4$percent),"%",sep="")
+dat4
+
+ggplot(dat4,
+       aes(x = "",
+           y = percent,
+           fill = B2)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")
+```
+
+# B3. average hours per day using the internet?
+
+mean
+percentiles
+
+```{r}
+mean(eh$B3)
+fivenum(eh$B3)
+```
+
+```{r}
+eh %>% ggplot(aes(B3)) +
+  geom_density(fill= "cyan")+
+  theme_minimal()+
+  labs(title="Average Internet Usage per Day",
+       x="Hours",
+       y="Density")
+```
+
+#B4. used the internet to search for health-related information
+
+```{r}
+dat5 <- eh %>%
+  count(B4)%>%
+  arrange(desc(B4)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat5$label <- paste(dat5$B4,"\n",round(dat5$percent),"%",sep="")
+dat5
+
+ggplot(dat5,
+       aes(x = "",
+           y = percent,
+           fill = B4)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")+
+  labs(title="Using the internet to search for health-related information",
+       x="",
+       y="")
+```
+
+# B5. When you look for health information online, which sources do you use most often? 
+
+```{r}
+eh %>% multiResponse(c("Search engines","Official Website", "General health website", "Social media", "Online Disscussion Group","Mobile Apps", "Others"))
+```
+
+## (C) e-Health literacy questionnaire (eHEALS)
+
+# C1. How useful do you feel the Internet is in helping you in making decisions about your health?
+
+```{r}
+percent_C1 <- eh %>%
+  count(C1)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C1 %>%
+  ggplot()+
+  geom_col(aes(C1,percent,fill= C1))+
+  geom_text(aes(C1,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="How useful do you feel the Internet is in 
+       helping you in making decisions about your health?",
+       x="",
+       y="Percent")
+```
+
+#C2. How important is it for you to be able to access health resources on the Internet?
+
+```{r}
+percent_C2 <- eh %>%
+  count(C2)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C2 %>%
+  ggplot()+
+  geom_col(aes(C2,percent,fill= C2))+
+  geom_text(aes(C2,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="How important is it for you to be able 
+       to access health resources on the Internet?",
+       x="",
+       y="Percent")
+```
+
+# C3.I know what health resources are available on the Internet
+
+
+```{r}
+percent_C3 <- eh %>%
+  count(C3)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C3 %>%
+  ggplot()+
+  geom_col(aes(C3,percent,fill= C3))+
+  geom_text(aes(C3,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="I know what health resources are available on the Internet",
+       x="",
+       y="Percent")
+```
+
+# C4. I know where to find helpful health resources on the Internet
+
+```{r}
+percent_C4 <- eh %>%
+  count(C4)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C4 %>%
+  ggplot()+
+  geom_col(aes(C4,percent,fill= C4))+
+  geom_text(aes(C4,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="I know where to find helpful health 
+       resources on the Internet",
+       x="",
+       y="Percent")
+```
+
+# C5. I know how to find helpful health resources on the Internet
+
+```{r}
+percent_C5 <- eh %>%
+  count(C5)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C5 %>%
+  ggplot()+
+  geom_col(aes(C5,percent,fill= C5))+
+  geom_text(aes(C5,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="I know how to find helpful health 
+       resources on the Internet",
+       x="",
+       y="Percent")
+```
+
+# C6. I know how to use the Internet to answer my questions about health
+
+
+```{r}
+percent_C6 <- eh %>%
+  count(C6)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C6 %>%
+  ggplot()+
+  geom_col(aes(C6,percent,fill= C6))+
+  geom_text(aes(C6,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="I know how to use the Internet to 
+       answer my questions about health",
+       x="",
+       y="Percent")
+```
+
+# C7. I know how to use the health information I find on the Internet to help me
+
+```{r}
+percent_C7 <- eh %>%
+  count(C7)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C7 %>%
+  ggplot()+
+  geom_col(aes(C7,percent,fill= C7))+
+  geom_text(aes(C7,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title=" I know how to use the health information 
+       I find on the Internet to help me",
+       x="",
+       y="Percent")
+```
+
+# C8. I have the skills I need to evaluate the health resources I find on the Internet
+
+```{r}
+percent_C8 <- eh %>%
+  count(C8)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C8 %>%
+  ggplot()+
+  geom_col(aes(C8,percent,fill= C8))+
+  geom_text(aes(C8,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="I have the skills I need to 
+       evaluate the health resources I find on the Internet",
+       x="",
+       y="Percent")
+```
+
+#C9. I can tell high quality health resources from low quality health resources on the Internet
+
+```{r}
+percent_C9 <- eh %>%
+  count(C9)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C9 %>%
+  ggplot()+
+  geom_col(aes(C9,percent,fill= C9))+
+  geom_text(aes(C9,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="I can tell high quality health resources 
+       from low quality health resources on the Internet",
+       x="",
+       y="Percent")
+```
+
+# C10. I feel confident in using information from the Internet to make health decisions
+
+```{r}
+percent_C10 <- eh %>%
+  count(C10)%>%
+  mutate(percent=round(n*100/sum(n),1))
+
+percent_C10 %>%
+  ggplot()+
+  geom_col(aes(C10,percent,fill= C10))+
+  geom_text(aes(C10,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  scale_fill_brewer(palette = "Set2")+
+  theme(legend.position = "FALSE")+
+  labs(title="I feel confident in using information 
+       from the Internet to make health decisions",
+       x="",
+       y="Percent")
+```
+
+# eHealth Literacy Score
+
+mean
+percentiles
+```{r}
+mean(eh$eHealth_score)
+fivenum(eh$eHealth_score)
+```
+
+```{r}
+eh %>% ggplot(aes(eHealth_score)) +
+  geom_density(fill= "cyan")+
+  #coord_flip()+
+  theme_minimal()+
+  labs(title="eHealth Literacy Score",
+       x="Score",
+       y="Density")
+```
+
+
+```{r}
+eh %>%
+  group_by(sex) %>%
+  mutate(mean_by_sex = mean(eHealth_score)) %>%
+  ungroup() %>%
+  ggplot(aes(sex, eHealth_score, colour = sex,
+             show.legend = F)) +
+  coord_flip() +
+  geom_jitter(show.legend = F,
+              size = 4,
+              alpha = 0.2,
+              width = 0.05) +
+  stat_summary(fun = mean, geom = "point", size = 8, show.legend = F) +
+  geom_hline(aes(yintercept = mean(eHealth_score)),
+             colour = "gray70",
+             linewidth = 0.9) +
+  geom_segment(aes(x = sex, xend = sex,
+                   y = mean(eHealth_score), yend = mean_by_sex),
+               size = 2, show.legend = F) +
+  labs(title = "eHealth Literacy scores by Sex",
+       x = "Sex",
+       y = "eHealth Literacy Score") +
+  theme(legend.position = "none") +
+  theme_bw()
+```
+
+
+
+
+
+```{r}
+eh <- eh %>% 
+  mutate(literacy_gp = case_when(eHealth_score <= 31 ~ "0",
+                                  eHealth_score > 31 ~ "1"))
+
+eh$literacy_gp <- as.factor(eh$literacy_gp)
+eh$literacy_gp <-factor(eh$literacy_gp,
+                    levels=c(0,1),
+                    labels=c("Low eHealth Literacy", "High eHealth Literacy"))
+```
+
+# eHealth Literacy group
+
+```{r}
+dat6 <- eh %>%
+  count(literacy_gp)%>%
+  arrange(desc(literacy_gp)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat6$label <- paste(dat6$literacy_gp,"\n",round(dat6$percent),"%",sep="")
+dat6
+
+ggplot(dat6,
+       aes(x = "",
+           y = percent,
+           fill = literacy_gp)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")+
+  labs(title="eHealth Literacy Group",
+       x="",
+       y="")
+```
+
+at generated the plot.

@@ -1,0 +1,756 @@
+---
+title: "Energy Drinks (UCH)"
+author: "Htet Phyo Aung"
+date: "2024-08-08"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      comment="",
+                      message=FALSE,
+                      warning = FALSE)
+```
+
+```{r packages, include=FALSE}
+library(rio)
+library(mStats)
+library(tidyverse)
+library(finalfit)
+library(knitr)
+library(patchwork)
+library(scales)
+```
+
+```{r data, include=FALSE}
+rm(list = ls())
+edrink <- readRDS("edrink_clean.rds")
+mStats::codebook(edrink)
+dim(edrink)
+```
+
+## Age distribution of the students
+
+mean
+
+percentiles
+
+sd
+
+present with mean(sd) min max median (IQR)
+
+```{r}
+mean(edrink$age)
+fivenum(edrink$age)
+sd(edrink$age)
+```
+
+age distribution histogram
+
+```{r}
+edrink %>% 
+  ggplot(aes(age)) +
+  geom_histogram(aes(y= ..density..), bins = 13, fill = "cyan")+
+  geom_density(alpha=.2, fill="gray", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(age)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(16,26))+
+  labs(title="Age Distribution of Students",
+       x="Age",
+       y="")
+```
+
+##frequency table for catagorized variables
+
+```{r}
+mStats::tab(edrink, sex, marital,religion,living)
+```
+
+## Sex
+
+```{r}
+
+percent_sex <- edrink %>%
+  count(sex)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_sex %>%
+  ggplot()+
+  geom_col(aes(sex,percent,fill= sex))+
+  geom_text(aes(sex,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Sex of Students",
+       x="",
+       y="Percent")
+
+  
+```
+
+## Marital status
+
+```{r}
+percent_marital <- edrink %>%
+  count(marital)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_marital %>%
+  ggplot()+
+  geom_col(aes(marital,percent,fill= marital))+
+    geom_text(aes(marital,percent, label = scales::percent(percent/100)),
+            vjust = -0.2, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Marital Status of Students",
+       x="",
+       y="Percent")
+```
+
+## Religion
+
+```{r}
+percent_religion <- edrink %>%
+  count(religion)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_religion %>%
+  ggplot()+
+  geom_col(aes(religion,percent,fill= religion))+
+    geom_text(aes(religion,
+                  percent, 
+                  label = scales::percent(percent/100)),
+            vjust = -0.1, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Religion of Students",
+       x="",
+       y="Percent")
+```
+
+## expend
+
+```{r}
+mean(edrink$expenditure)
+fivenum(edrink$expenditure)
+sd(edrink$expenditure)
+```
+
+## Current living condition
+
+```{r}
+percent_living <- edrink %>%
+  count(living)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_living %>%
+  ggplot()+
+  geom_col(aes(living,percent,fill= living))+
+  geom_text(aes(living,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Current Living Condition of Students",
+       x="",
+       y="Percent")
+```
+
+## friends drinking edrink
+
+```{r}
+mStats::tab(edrink, friends)
+```
+
+```{r}
+percent_friends <- edrink %>%
+  count(friends)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_friends %>%
+  ggplot()+
+  geom_col(aes(friends,percent,fill= friends))+
+  geom_text(aes(friends,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do your friends take energy drinks?",
+       x="",
+       y="Percent")
+```
+
+## family take edrink
+
+```{r}
+mStats::tab(edrink, family)
+```
+
+```{r}
+percent_family <- edrink %>%
+  count(family)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_family %>%
+  ggplot()+
+  geom_col(aes(family,percent,fill= family))+
+    geom_text(aes(family,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do your family members take energy drinks?",
+       x="",
+       y="Percent")
+```
+
+### Awareness Questions
+
+#B1, Do you know what an energy drink is?
+
+```{r}
+percent_know <- edrink %>%
+  count(B1)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_know %>%
+  ggplot()+
+  geom_col(aes(B1,percent,fill= B1))+
+  geom_text(aes(B1,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you know what an energy drink is?",
+       x="",
+       y="Percent")
+```
+
+##B2.Choose the kinds of energy drink you know. (multiple response)
+
+```{r}
+
+library(ufs)
+
+edrink %>% 
+  multiResponse(c("Red Bull","Shark","LIPOVITAN-D","M-150",
+                  "Burn","Speed","Carabao","Rocker","Other"))
+
+```
+
+##B3. Which of these substances do you think are contained in energy drinks?(Multiple response)
+
+```{r}
+edrink %>% 
+  multiResponse(c("Caffeine","Vitamins","Sugars" ,"Flavouring Agents",
+                  "Preservatives","Others"))
+```
+
+##B4. What effects do you think energy drinks have? (Multiple Response)
+
+```{r}
+edrink %>% 
+  multiResponse(c("Increase physical resistance" , "Increase study concentration","provide alertness","Don't Know","B4e"))
+```
+
+##B5. Caffeine in energy drinks causes the following symptoms.(Multiple Response)
+
+```{r}
+edrink %>% 
+  multiResponse(c("Headache","Tremor","Nervousness","Palpitation",
+                  "Insomnia","Anxiety", "B5g"))
+```
+
+##B6. Frequent consumption of Energy drinks is
+
+```{r}
+mStats::tab(edrink,B6)
+```
+
+```{r}
+percent_B6 <- edrink %>%
+  count(B6)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_B6 %>%
+  ggplot()+
+  geom_col(aes(B6,percent,fill= B6))+
+    geom_text(aes(B6,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Frequent consumption of Energy drinks is",
+       x="",
+       y="Percent")
+```
+
+##B7. Consumption of High-level sugar-sweetened drinks is
+
+```{r}
+percent_B7 <- edrink %>%
+  count(B7)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_B7 %>%
+  na.omit() %>% 
+  ggplot()+
+  geom_col(aes(B7,percent,fill= B7))+
+    geom_text(aes(B7,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Consumption of High-level sugar-sweetened drinks is",
+       x="",
+       y="Percent")
+```
+
+##B8. Health effects/risks due to consumption of energy drinks are(Multiple response)
+
+```{r}
+edrink %>% 
+  multiResponse(c("Hyperacidity","Sleep Disturbance","Tuberculosis",
+                  "Type 2 Diabetes","Hypertension","Hyperlipidaemia", "Overweight/Obse","Anaemia"))
+```
+
+### Attitude towards E drinks
+
+##C1. Energy drink consumption is not harmful for health
+
+```{r}
+mStats::tab(edrink, C1)
+```
+
+```{r}
+percent_C1 <- edrink %>%
+  count(C1)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C1 %>%
+  ggplot()+
+  geom_col(aes(C1,percent,fill= C1))+
+    geom_text(aes(C1,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Energy drink consumption is not harmful for health",
+       x="",
+       y="Percent")
+```
+
+##C2. Energy drinks should be consumed because for the nutrients in it
+
+```{r}
+mStats::tab(edrink, C2)
+```
+
+```{r}
+percent_C2 <- edrink %>%
+  count(C2)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C2 %>%
+  ggplot()+
+  geom_col(aes(C2,percent,fill= C2))+
+    geom_text(aes(C2,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Energy drinks should be consumed 
+  because for the nutrients in it",
+       x="",
+       y="Percent")
+```
+
+##C3. Energy drinks are consumed because they are easily available
+
+```{r}
+mStats::tab(edrink, C3)
+```
+
+```{r}
+percent_C3 <- edrink %>%
+  count(C3)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C3 %>%
+  ggplot()+
+  geom_col(aes(C3,percent,fill= C3))+
+    geom_text(aes(C3,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Energy drinks are consumed 
+       because they are easily available",
+       x="",
+       y="Percent")
+```
+
+##C4. Advertisements for energy drinks should be banned
+
+```{r}
+mStats::tab(edrink, C4)
+```
+
+```{r}
+percent_C4 <- edrink %>%
+  count(C4)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C4 %>%
+  ggplot()+
+  geom_col(aes(C4,percent,fill= C4))+
+    geom_text(aes(C4,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Advertisements for energy drinks 
+       should be banned",
+       x="",
+       y="Percent")
+```
+
+##C5. Energy drinks should be sold with cheap price
+
+```{r}
+mStats::tab(edrink, C5)
+```
+
+```{r}
+percent_C5 <- edrink %>%
+  count(C5)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C5 %>%
+  ggplot()+
+  geom_col(aes(C5,percent,fill= C5))+
+    geom_text(aes(C5,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Energy drinks should be sold with cheap price",
+       x="",
+       y="Percent")
+```
+
+##C6. Water or fresh fruit juice should be drunk instead of energy drinks
+
+```{r}
+mStats::tab(edrink, C6)
+```
+
+```{r}
+percent_C6 <- edrink %>%
+  count(C6)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C6 %>%
+  ggplot()+
+  geom_col(aes(C6,percent,fill= C6))+
+    geom_text(aes(C6,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Water or fresh fruit juice should be drunk 
+       instead of energy drinks",
+       x="",
+       y="Percent")
+```
+
+##C7. Ingredients in energy drinks should be known
+
+```{r}
+mStats::tab(edrink, C7)
+```
+
+```{r}
+percent_C7 <- edrink %>%
+  count(C7)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C7 %>%
+  ggplot()+
+  geom_col(aes(C7,percent,fill= C7))+
+    geom_text(aes(C7,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Ingredients in energy drinks should be known",
+       x="",
+       y="Percent")
+```
+
+##C8. Energy drinks consumption can cause Diabetes
+
+```{r}
+mStats::tab(edrink, C8)
+```
+
+```{r}
+percent_C8 <- edrink %>%
+  count(C8)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C8 %>%
+  ggplot()+
+  geom_col(aes(C8,percent,fill= C8))+
+    geom_text(aes(C8,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Energy drinks consumption can cause Diabetes",
+       x="",
+       y="Percent")
+```
+
+##C9. Energy drinks are not appropriate for children
+
+```{r}
+mStats::tab(edrink, C9)
+```
+
+```{r}
+percent_C9 <- edrink %>%
+  count(C9)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C9 %>%
+  ggplot()+
+  geom_col(aes(C9,percent,fill= C9))+
+    geom_text(aes(C9,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Energy drinks are not appropriate for children",
+       x="",
+       y="Percent")
+```
+
+##C10. Frequent consumption of energy drinks can become dependent
+
+```{r}
+mStats::tab(edrink, C10)
+```
+
+```{r}
+percent_C10 <- edrink %>%
+  count(C10)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_C10 %>%
+  ggplot()+
+  geom_col(aes(C10,percent,fill= C10))+
+    geom_text(aes(C10,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Frequent consumption of energy drinks 
+       can become dependent",
+       x="",
+       y="Percent")
+```
+
+###Practice
+
+##D1. Do you recently consumed energy drinks? (within one month)
+
+```{r}
+mStats::tab(edrink, D1)
+```
+
+```{r}
+percent_D1 <- edrink %>%
+  count(D1)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_D1 %>%
+  ggplot()+
+  geom_col(aes(D1,percent,fill= D1))+
+    geom_text(aes(D1,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you recently consumed energy drinks?
+       (within one month)",
+       x="",
+       y="Percent")
+```
+
+##D2. What age did you start consume energy drink?
+
+```{r}
+mean(edrink$D2)
+fivenum(edrink$D2)
+sd(edrink$D2)
+```
+
+```{r}
+edrink %>% 
+  ggplot(aes(D2)) +
+  geom_histogram(aes(y= ..density..), bins = 13, fill = "cyan")+
+  geom_density(alpha=.2, fill="gray", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(D2)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(0,20))+
+  labs(title="Age that starts drinking Energy Drinks",
+       x="Age",
+       y="")
+```
+
+##D3. How many times did you consume energy drink during the last week?
+
+```{r}
+mStats::tab(edrink, D3)
+```
+
+```{r}
+percent_D3 <- edrink %>%
+  count(D3)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_D3 %>%
+  ggplot()+
+  geom_col(aes(D3,percent,fill= D3))+
+    geom_text(aes(D3,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="How many days did you consume energy drink  
+       during the last week?",
+       x="",
+       y="Percent")
+```
+
+#D4. How were you first introduced to Energy drinks?
+
+```{r}
+mStats::tab(edrink, D4)
+```
+
+```{r}
+percent_D4 <- edrink %>%
+  count(D4)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_D4 %>%
+  ggplot()+
+  geom_col(aes(D4,percent,fill= D4))+
+    geom_text(aes(D4,percent, label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  theme(axis.text.x = element_text(ang= 15))+
+  labs(title="How were you first introduced to Energy drinks?",
+       x="",
+       y="Percent")
+```
+
+##D5. Reasons for consuming energy drinks (multiple response)
+
+```{r}
+edrink %>% 
+  multiResponse(c("Sports","To stay awake","Mental Enhancer",
+                  "Energy Boost","To study","Weight control"))
+```
+
+##D7. Do you usually read the food label before buying energy drink?
+
+```{r}
+mStats::tab(edrink, D7)
+```
+
+```{r}
+percent_D7 <- edrink %>%
+  count(D7)%>%
+  mutate(percent=round(n*100/105,1))
+
+percent_D7 %>%
+  ggplot()+
+  geom_col(aes(D7,percent,fill= D7))+
+    geom_text(aes(D7,percent,  label = scales::percent(percent/100)),
+            vjust = -0.15, 
+            colour="black",
+            size = 3)+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you usually read the food label 
+       before buying energy drink?",
+       x="",
+       y="Percent")
+```

@@ -1,0 +1,739 @@
+---
+title: "IGD"
+author: "Htet Phyo Aung"
+date: "2025-05-10"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      comment="",
+                      message=FALSE,
+                      warning = FALSE)
+```
+
+```{r packages, include=FALSE}
+library(rio)
+library(mStats)
+library(tidyverse)
+library(finalfit)
+library(knitr)
+library(patchwork)
+library(tidyquant)
+library(ggdist)
+library(gghalves)
+library(ufs)
+```
+
+```{r data, include=FALSE}
+rm(list = ls())
+igd <- readRDS("hs_igd_clean.rds")
+mStats::codebook(igd)
+dim(igd)
+```
+
+## Age
+
+mean
+percentiles
+
+```{r}
+mean(igd$age)
+fivenum(igd$age)
+sd(igd$age)
+```
+```{r}
+igd %>% 
+  ggplot(aes(age)) +
+  geom_histogram(aes(y= ..density..), bins = 10, fill = "cyan")+
+  geom_density(alpha=.2, fill="gray", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(age)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(16,24))+
+  labs(title="Age Distribution of Students",
+       x="Age",
+       y="")
+```
+
+##frequency table for catagorized variables
+
+```{r}
+mStats::tab(igd, sex, year,living, relationship, play_game)
+```
+
+## Sex
+
+```{r}
+
+percent_sex <- igd %>%
+  count(sex)%>%
+  mutate(percent=round(n*100/125,1))
+
+percent_sex %>%
+  ggplot()+
+  geom_col(aes(sex,percent,fill= sex))+
+  geom_text(aes(sex,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Sex of Students",
+       x="",
+       y="Percent")
+
+
+```
+```{r}
+dat1 <- igd %>%
+  count(sex)%>%
+  arrange(desc(sex)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat1$label <- paste(dat1$sex,"\n",round(dat1$percent),"%",sep="")
+dat1
+
+ggplot(dat1,
+       aes(x = "",
+           y = percent,
+           fill = sex)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")
+```
+
+
+## Academic year
+
+```{r}
+percent_year <- igd %>%
+  count(year)%>%
+  mutate(percent=round(n*100/125,1))
+
+percent_year %>%
+  ggplot()+
+  geom_col(aes(year,percent,fill= year))+
+  geom_text(aes(year,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Academic Year of Students",
+       x="",
+       y="Percent")
+```
+
+## Expenditure per month
+
+mean
+percentile
+sd
+
+```{r}
+mean(igd$expend)
+fivenum(igd$expend)
+sd(igd$expend)
+```
+
+
+
+
+
+## Relationship status
+
+```{r}
+percent_relation <- igd %>%
+  count(relationship)%>%
+  mutate(percent=round(n*100/125,1))
+
+percent_relation %>%
+  ggplot()+
+  geom_col(aes(relationship,percent,fill= relationship))+
+  geom_text(aes(relationship,percent, 
+                label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Relationship status of Students",
+       x="",
+       y="Percent")
+```
+
+## Do you ever paly electronic games?
+
+```{r}
+dat2 <- igd %>%
+  count(play_game)%>%
+  arrange(desc(play_game)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat2$label <- paste(dat2$play_game,"\n",round(dat2$percent),"%",sep="")
+dat2
+
+ggplot(dat2,
+       aes(x = "",
+           y = percent,
+           fill = play_game)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")
+```
+
+## Gaming platform
+
+```{r}
+library(ufs)
+
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  multiResponse(c("Desktop/Laptop" ,"Console(PS3/4,Nintendo)","Mobile Phone/Tablet"))
+```
+
+
+## Reason for Playing Game
+
+```{r}
+library(ufs)
+
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  multiResponse(c("For fun" ,"To pass time" ,"Achievement",
+                "To relief stress"))
+```
+
+## gaming time in weekdays(Mon-Fri)
+
+mean
+percentile
+sd
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  mStats::summ(weekday)
+```
+
+## gaming time in weekends(Mon-Fri)
+
+mean
+percentile
+sd
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  mStats::summ(weekend)
+```
+
+## weekdays Vs weekends
+
+```{r}
+Aa<- igd %>% 
+  filter(play_game == "Yes") %>% 
+  ggplot(aes(weekday)) + 
+  stat_halfeye(adjust = .5, width = .7, .width = 0, justification = -.2, point_colour = NA, fill = "violet") + 
+  geom_boxplot(width = .2, outlier.shape = NA)+
+  theme_minimal()+
+  theme(legend.position = "FALSE")
+
+Bb <- igd %>% 
+  filter(play_game == "Yes") %>% 
+  ggplot(aes(weekend)) + 
+  stat_halfeye(adjust = .5, width = .7, .width = 0, justification = -.2, point_colour = NA, fill = "steelblue1") + 
+  geom_boxplot(width = .2, outlier.shape = NA)+
+  theme_minimal()+
+  theme(legend.position = "FALSE")
+
+((Aa)/(Bb)) +
+  plot_annotation(title ="Gaming Time in Weekdays Vs Weekends 
+                  (Minutes)",
+                  theme = theme(plot.title = element_text(size = 18))) 
+
+```
+
+## Cost for gaming
+
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  mStats::summ(game_cost)
+```
+
+```{r}
+options(scipen=999)
+igd %>% 
+  filter(play_game == "Yes" & game_cost < 100000) %>% 
+  ggplot(aes(game_cost)) +
+  geom_histogram(aes(y= ..density..),bins = 15, fill = "cyan")+
+  geom_density(alpha=.2, fill="gray", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(game_cost)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(0,100000))+
+  labs(title="Cost for gaming",
+       x="Kyat",
+       y="")
+```
+
+## Play online multiplayer games
+
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  mStats::tab("Online_multiplayer games")
+```
+
+```{r}
+dat3 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(`Online_multiplayer games`)%>%
+  arrange(desc(`Online_multiplayer games`)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat3$label <- paste(dat3$`Online_multiplayer games`,
+                    "\n",round(dat3$percent),"%",sep="")
+dat3
+
+ggplot(dat3,
+       aes(x = "",
+           y = percent,
+           fill = `Online_multiplayer games`)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do You play online multiplayer games?")
+```
+
+## Online gambling games
+
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  mStats::tab("Online_gambling games")
+```
+```{r}
+dat4 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(`Online_gambling games`)%>%
+  arrange(desc(`Online_gambling games`)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat4$label <- paste(dat4$`Online_gambling games`,
+                    "\n",round(dat4$percent),"%",sep="")
+dat4
+
+ggplot(dat4,
+       aes(x = "",
+           y = percent,
+           fill = `Online_gambling games`)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do You play online gambling games?")
+```
+
+## IGD Questions
+
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  mStats::tab(C1, C2, C3, C4, C5, C6, C7, C8, C9)
+```
+
+
+## C1. Do you feel preoccupied with your gaming behavior? 
+
+
+```{r}
+percent_C1 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C1)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C1 %>%
+  ggplot()+
+  geom_col(aes(C1,percent,fill= C1))+
+  geom_text(aes(C1,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you feel preoccupied with your gaming behavior?",
+       x="",
+       y="Percent")
+
+```
+
+
+## C2. Do you feel more irritability, anxiety or even sadness when you try to either reduce or stop your gaming activity?
+
+```{r}
+percent_C2 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C2)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C2 %>%
+  ggplot()+
+  geom_col(aes(C2,percent,fill= C2))+
+  geom_text(aes(C2,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you feel more irritability, anxiety 
+  or even sadness when you try to either reduce or 
+  stop your gaming activity?",
+       x="",
+       y="Percent")
+
+```
+
+## C3. Do you feel the need to spend increasing amount of time engaged gaming in order to achieve satisfaction or pleasure?
+
+```{r}
+percent_C3 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C3)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C3 %>%
+  ggplot()+
+  geom_col(aes(C3,percent,fill= C3))+
+  geom_text(aes(C3,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you feel the need to spend increasing 
+  amount of time engaged gaming in order to achieve 
+  satisfaction or pleasure?",
+       x="",
+       y="Percent")
+
+```
+
+## C4. Do you systematically fail when trying to control or cease your gaming activity?
+
+```{r}
+percent_C4 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C4)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C4 %>%
+  ggplot()+
+  geom_col(aes(C4,percent,fill= C4))+
+  geom_text(aes(C4,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you systematically fail when trying to control or 
+       cease your gaming activity?",
+       x="",
+       y="Percent")
+
+```
+
+## C5. Have you lost interests in previous hobbies and other entertainment activities as a result of your engagement with the game?
+
+```{r}
+percent_C5 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C5)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C5 %>%
+  ggplot()+
+  geom_col(aes(C5,percent,fill= C5))+
+  geom_text(aes(C5,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Have you lost interests in previous hobbies 
+  and other entertainment activities as a result 
+  of your engagement with the game?",
+       x="",
+       y="Percent")
+
+```
+
+## C6. Have you continued your gaming activity despite knowing it was causing problems between you and other people
+
+```{r}
+percent_C6 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C6)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C6 %>%
+  ggplot()+
+  geom_col(aes(C6,percent,fill= C6))+
+  geom_text(aes(C6,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Have you continued your gaming activity 
+  despite knowing it was causing problems 
+  between you and other people",
+       x="",
+       y="Percent")
+
+```
+
+## C7. Have you deceived any of your family members, therapists or others because the amount of your gaming activity?
+
+```{r}
+percent_C7 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C7)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C7 %>%
+  ggplot()+
+  geom_col(aes(C7,percent,fill= C7))+
+  geom_text(aes(C7,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Have you deceived any of your family 
+  members,therapists or others because the amount of your 
+  gaming activity?",
+       x="",
+       y="Percent")
+
+```
+
+## C8. Do you play in order to temporarily escape or relieve a negative mood (e.g., helplessness, guilt, anxiety)?
+
+```{r}
+percent_C8 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C8)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C8 %>%
+  ggplot()+
+  geom_col(aes(C8,percent,fill= C8))+
+  geom_text(aes(C8,percent, 
+                label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Do you play in order to temporarily escape 
+       or relieve a negative mood 
+       (e.g., helplessness, guilt, anxiety)?",
+       x="",
+       y="Percent")
+
+```
+
+## C9. Have you jeopardized or lost an important relationship, job or an educational or career opportunity because of your gaming activity?
+
+```{r}
+percent_C9 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(C9)%>%
+  mutate(percent=round(n*100/76,1))
+
+percent_C9 %>%
+  ggplot()+
+  geom_col(aes(C9,percent,fill= C9))+
+  geom_text(aes(C9,percent, label = scales::percent(percent/100)),
+            vjust = -0.5, 
+            colour="black")+
+  scale_fill_brewer(palette = "Set2")+
+  scale_y_continuous(limits = c(0,100))+
+  theme_minimal()+
+  theme(legend.position = "FALSE")+
+  labs(title="Have you jeopardized or lost an important relationship,
+       job or an educational or career opportunity 
+       because of your gaming activity?",
+       x="",
+       y="Percent")
+
+```
+
+## IGD score
+
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  mStats::summ(igd_score)
+```
+
+
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  ggplot(aes(igd_score)) +
+  geom_histogram(aes(y= ..density..), bins = 20,fill = "cyan")+
+  geom_density(alpha=.2, fill="gray", adjust = 1.3)+
+  geom_vline(aes(xintercept=mean(age)), color="darkred",
+             linetype="dashed")+
+  theme_minimal()+
+  scale_x_continuous(limits = c(0,40))+
+  labs(title="IGD Score",
+       x="IGD Score",
+       y="")
+```
+
+```{r}
+igd %>%
+  filter(play_game == "Yes") %>% 
+  group_by(sex) %>%
+  mutate(mean_by_sex = mean(igd_score)) %>%
+  ungroup() %>%
+  ggplot(aes(sex, igd_score, colour = sex,
+             show.legend = F)) +
+  coord_flip() +
+  geom_jitter(show.legend = F,
+              size = 4,
+              alpha = 0.2,
+              width = 0.05) +
+  stat_summary(fun = mean, geom = "point", size = 8, show.legend = F) +
+  geom_hline(aes(yintercept = mean(igd_score)),
+             colour = "gray70",
+             linewidth = 0.9) +
+  geom_segment(aes(x = sex, xend = sex,
+                   y = mean(igd_score), yend = mean_by_sex),
+               size = 2, show.legend = F) +
+  labs(title = "IGD scores by Sex",
+       x = "Sex",
+       y = "IGD Score") +
+  theme(legend.position = "none") +
+  theme_bw()
+```
+
+```{r}
+igd %>%
+  filter(play_game == "Yes") %>% 
+  group_by(year) %>%
+  mutate(mean_by_year = mean(igd_score)) %>%
+  ungroup() %>%
+  ggplot(aes(year, igd_score, colour = year,
+             show.legend = F)) +
+  coord_flip() +
+  geom_jitter(show.legend = F,
+              size = 4,
+              alpha = 0.2,
+              width = 0.05) +
+  stat_summary(fun = mean, geom = "point", size = 8, show.legend = F) +
+  geom_hline(aes(yintercept = mean(igd_score)),
+             colour = "gray70",
+             linewidth = 0.9) +
+  geom_segment(aes(x = year, xend = year,
+                   y = mean(igd_score), yend = mean_by_year),
+               size = 2, show.legend = F) +
+  labs(title = "IGD scores by Academic Year",
+       x = "Year",
+       y = "IGD Score") +
+  theme(legend.position = "none") +
+  theme_bw()
+```
+
+## IGD score Group
+
+```{r}
+igd %>% 
+  filter(play_game == "Yes") %>% 
+  mStats::tab(igd_gp)
+```
+
+
+```{r}
+dat5 <- igd %>%
+  filter(play_game == "Yes") %>% 
+  count(igd_gp)%>%
+  arrange(desc(igd_gp)) %>%
+  mutate(percent = round(n*100/sum(n),1),
+         lab_pos = cumsum(percent)-0.5*percent)
+
+dat5$label <- paste(dat5$igd_gp,
+                    "\n",round(dat5$percent),"%",sep="")
+dat5
+
+ggplot(dat5,
+       aes(x = "",
+           y = percent,
+           fill = igd_gp)) +
+  geom_bar(width = 1,
+           stat = "identity",
+           color = "black") +
+  geom_text(aes(y = lab_pos, label = label),
+            color = "black") +
+  coord_polar("y",
+              start = 0,
+              direction = -1) +
+  scale_fill_brewer(palette = "Set2")+ 
+  theme_void()+
+  theme(legend.position = "FALSE")+
+  labs(title="IGD score group")
+```
+
+
+
+
+

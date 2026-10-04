@@ -1,0 +1,21 @@
+---
+title: "Breusch-Pagan Test for Homoscedasticity"
+author: "Dr. Htet Phyo Aung"
+date: "2026-08-14"
+output: word_document
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
